@@ -1,0 +1,1154 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Desafio dos Pênaltis 2.0</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --green: #39ed91;
+    --dark: #071b25;
+    --panel: #102d3a;
+}
+
+body {
+    min-height: 100vh;
+    padding: 18px;
+    font-family: Arial, sans-serif;
+    color: white;
+    background:
+        radial-gradient(circle at top, #174c58, transparent 55%),
+        linear-gradient(135deg, #06141f, #102c3b);
+}
+
+button, select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+    border: none;
+    transition: .2s;
+}
+
+button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    filter: brightness(1.12);
+}
+
+button:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.container {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+header h1 {
+    color: var(--green);
+    font-size: clamp(26px, 5vw, 42px);
+    text-shadow: 0 0 20px #39ed9150;
+}
+
+header p {
+    color: #b7d2dd;
+    margin-top: 7px;
+}
+
+.panel {
+    background: #102b39ed;
+    border: 1px solid #2c6871;
+    border-radius: 17px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 30px #0004;
+}
+
+.settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: end;
+    gap: 12px;
+}
+
+.field-group label {
+    display: block;
+    color: #b9d3dc;
+    font-size: 13px;
+    margin-bottom: 7px;
+}
+
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #39727b;
+    border-radius: 9px;
+    background: #0a202c;
+    color: white;
+    outline: none;
+}
+
+.sound-btn {
+    padding: 12px 15px;
+    background: #244c5b;
+    color: white;
+    border-radius: 9px;
+}
+
+.scoreboard {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+}
+
+.team-score {
+    background: #193e4d;
+    border-radius: 13px;
+    padding: 14px 8px;
+}
+
+.team-name {
+    font-size: 13px;
+    color: #c7dce4;
+    overflow-wrap: anywhere;
+}
+
+.team-score strong {
+    display: block;
+    font-size: 38px;
+    color: var(--green);
+    margin-top: 5px;
+}
+
+.vs {
+    color: #f6cc5a;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.round-info {
+    text-align: center;
+    margin-top: 12px;
+    color: #f5ce64;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+/* ESTÁDIO */
+
+.stadium {
+    background: #081d27;
+    border: 1px solid #31636a;
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+}
+
+.crowd {
+    height: 75px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: repeating-linear-gradient(
+        90deg,
+        #233b51 0 35px,
+        #172c3d 35px 70px
+    );
+    border-bottom: 5px solid #53646b;
+    overflow: hidden;
+}
+
+.fan {
+    font-size: 24px;
+    animation: cheer .6s infinite alternate;
+}
+
+.fan:nth-child(even) {
+    animation-delay: .3s;
+}
+
+@keyframes cheer {
+    from { transform: translateY(3px) rotate(-5deg); }
+    to { transform: translateY(-7px) rotate(5deg); }
+}
+
+.field {
+    height: 390px;
+    position: relative;
+    overflow: hidden;
+    background: repeating-linear-gradient(
+        90deg,
+        #167b40 0 90px,
+        #1c914c 90px 180px
+    );
+}
+
+.field::before {
+    content: "";
+    position: absolute;
+    width: 90%;
+    height: 100px;
+    left: 5%;
+    bottom: -70px;
+    border: 2px solid #ffffff65;
+    border-radius: 50%;
+}
+
+.field::after {
+    content: "";
+    position: absolute;
+    height: 2px;
+    background: #ffffff55;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+}
+
+.goal {
+    position: absolute;
+    width: 78%;
+    height: 190px;
+    left: 11%;
+    top: 12px;
+    border: 9px solid white;
+    border-bottom: 0;
+    background:
+        repeating-linear-gradient(
+            0deg,
+            transparent 0 19px,
+            #ffffff55 20px 21px
+        ),
+        repeating-linear-gradient(
+            90deg,
+            transparent 0 24px,
+            #ffffff55 25px 26px
+        );
+    z-index: 1;
+}
+
+.keeper {
+    position: absolute;
+    left: 50%;
+    top: 75px;
+    transform: translateX(-50%);
+    font-size: 72px;
+    z-index: 3;
+    transition: left .45s ease;
+    filter: drop-shadow(0 5px 3px #0006);
+}
+
+.keeper-label {
+    position: absolute;
+    top: 145px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #09212b;
+    padding: 4px 9px;
+    border-radius: 5px;
+    font-size: 10px;
+    z-index: 4;
+}
+
+.ball {
+    position: absolute;
+    font-size: 40px;
+    bottom: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 5;
+    transition:
+        left .6s ease,
+        bottom .6s ease,
+        transform .6s ease;
+}
+
+.ball.kicked {
+    bottom: 230px;
+    transform: translateX(-50%) rotate(650deg) scale(.7);
+}
+
+.player {
+    position: absolute;
+    bottom: 55px;
+    left: calc(50% - 65px);
+    font-size: 55px;
+    z-index: 4;
+}
+
+.player-label {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    background: #09212b;
+    padding: 3px 7px;
+    border-radius: 5px;
+}
+
+.goal-flash {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: #0005;
+    font-size: clamp(30px, 7vw, 55px);
+    font-weight: 900;
+    color: var(--green);
+    text-shadow: 0 3px 12px black;
+    pointer-events: none;
+}
+
+.goal-flash.show {
+    display: flex;
+    animation: flash .7s;
+}
+
+@keyframes flash {
+    0% { opacity: 0; transform: scale(.6); }
+    40% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1); }
+}
+
+/* CONTROLES */
+
+.controls {
+    text-align: center;
+    margin-top: 18px;
+}
+
+.controls h3 {
+    margin-bottom: 12px;
+    color: #d5e7eb;
+}
+
+.directions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.direction {
+    padding: 13px 5px;
+    color: white;
+    background: #245367;
+    border: 2px solid transparent;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.direction.selected {
+    background: #167b56;
+    border-color: var(--green);
+    box-shadow: 0 0 15px #39ed9160;
+}
+
+.kick-btn, .main-btn {
+    width: 100%;
+    padding: 15px;
+    margin-top: 13px;
+    border-radius: 10px;
+    background: var(--green);
+    color: #06291a;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.message {
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--green);
+    padding: 8px;
+}
+
+.progress {
+    display: flex;
+    justify-content: center;
+    gap: 9px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+}
+
+.dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid #b6cbd1;
+    background: #415b65;
+}
+
+.dot.scored {
+    background: #39ed91;
+    border-color: white;
+}
+
+.dot.missed {
+    background: #ed5555;
+    border-color: white;
+}
+
+.dot.extra {
+    background: #e8bd4b;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+}
+
+.actions button {
+    flex: 1;
+}
+
+.secondary-btn {
+    padding: 13px;
+    background: #244b5a;
+    color: white;
+    border-radius: 9px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.instructions {
+    text-align: center;
+    color: #a9c2cc;
+    font-size: 12px;
+    margin-top: 16px;
+    line-height: 1.7;
+}
+
+@media(max-width: 600px) {
+    body { padding: 10px; }
+    .panel { padding: 12px; }
+    .settings { grid-template-columns: 1fr 1fr; }
+    .sound-btn { grid-column: 1 / -1; }
+    .field { height: 330px; }
+    .goal { height: 160px; }
+    .keeper { top: 65px; font-size: 65px; }
+    .keeper-label { top: 130px; }
+    .ball.kicked { bottom: 195px; }
+    .team-score strong { font-size: 31px; }
+    .fan { font-size: 19px; }
+}
+
+@media(prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header>
+    <h1>⚽ DESAFIO DOS PÊNALTIS 2.0</h1>
+    <p>Entre em campo e mostre que você é craque!</p>
+</header>
+
+<section class="panel settings">
+
+    <div class="field-group">
+        <label for="team">🏆 Escolha seu time</label>
+        <select id="team">
+            <option value="Brasil">🇧🇷 Brasil</option>
+            <option value="Real Madrid">⚪ Real Madrid</option>
+            <option value="Barcelona">🔵 Barcelona</option>
+            <option value="Manchester City">🔵 Manchester City</option>
+            <option value="Flamengo">🔴 Flamengo</option>
+            <option value="Corinthians">⚫ Corinthians</option>
+            <option value="Palmeiras">🟢 Palmeiras</option>
+        </select>
+    </div>
+
+    <div class="field-group">
+        <label for="mode">🎮 Modo de jogo</label>
+        <select id="mode">
+            <option value="friendly">Amistoso</option>
+            <option value="championship">Campeonato</option>
+        </select>
+    </div>
+
+    <button class="sound-btn" id="soundButton">
+        🔊 Som ligado
+    </button>
+
+</section>
+
+<section class="panel">
+
+    <div class="scoreboard">
+
+        <div class="team-score">
+            <div class="team-name" id="myTeam">🇧🇷 Brasil</div>
+            <strong id="myScore">0</strong>
+        </div>
+
+        <div class="vs">VS</div>
+
+        <div class="team-score">
+            <div class="team-name" id="enemyTeam">Adversário</div>
+            <strong id="enemyScore">0</strong>
+        </div>
+
+    </div>
+
+    <div class="round-info" id="roundInfo">
+        AMISTOSO • 5 COBRANÇAS
+    </div>
+
+</section>
+
+<section class="panel stadium">
+
+    <div class="crowd" id="crowd">
+        <span class="fan">🙌</span>
+        <span class="fan">👏</span>
+        <span class="fan">🎉</span>
+        <span class="fan">🙌</span>
+        <span class="fan">👏</span>
+        <span class="fan">🎊</span>
+        <span class="fan">🙌</span>
+        <span class="fan">👏</span>
+        <span class="fan">🎉</span>
+        <span class="fan">🙌</span>
+        <span class="fan">👏</span>
+        <span class="fan">🎊</span>
+    </div>
+
+    <div class="field">
+
+        <div class="goal"></div>
+
+        <div class="keeper" id="keeper">🧤</div>
+        <div class="keeper-label">GOLEIRO</div>
+
+        <div class="player" id="player">🧍</div>
+        <div class="player-label">COBRADOR</div>
+
+        <div class="ball" id="ball">⚽</div>
+
+        <div class="goal-flash" id="flash"></div>
+
+    </div>
+
+</section>
+
+<section class="panel controls">
+
+    <h3>🎯 Escolha onde você vai chutar</h3>
+
+    <div class="directions">
+
+        <button class="direction" data-direction="left">
+            ↖ ESQUERDA
+        </button>
+
+        <button class="direction" data-direction="center">
+            ↑ MEIO
+        </button>
+
+        <button class="direction" data-direction="right">
+            ↗ DIREITA
+        </button>
+
+    </div>
+
+    <button class="kick-btn" id="kickButton">
+        ⚽ BATER PÊNALTI
+    </button>
+
+    <div class="message" id="message">
+        Escolha uma direção para começar!
+    </div>
+
+    <div class="progress" id="progress">
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+    </div>
+
+    <div class="actions">
+        <button class="secondary-btn" id="nextButton" disabled>
+            Próxima fase
+        </button>
+
+        <button class="secondary-btn" id="restartButton">
+            🔄 Reiniciar
+        </button>
+    </div>
+
+</section>
+
+<p class="instructions">
+    DESAFIO DOS PÊNALTIS 2.0<br>
+    Desenvolvido com HTML, CSS e JavaScript.<br>
+    Escolha seu time, mire e faça história!
+</p>
+
+</div>
+
+<script>
+/* =================================
+   CONFIGURAÇÕES E ELEMENTOS
+================================= */
+
+const teams = [
+    "🇧🇷 Brasil",
+    "⚪ Real Madrid",
+    "🔵 Barcelona",
+    "🔵 Manchester City",
+    "🔴 Flamengo",
+    "⚫ Corinthians",
+    "🟢 Palmeiras"
+];
+
+const $ = id => document.getElementById(id);
+
+const teamSelect = $("team");
+const modeSelect = $("mode");
+const kickButton = $("kickButton");
+const nextButton = $("nextButton");
+const restartButton = $("restartButton");
+const soundButton = $("soundButton");
+
+let selectedDirection = null;
+let goals = 0;
+let enemyGoals = 0;
+let shots = 0;
+let extraShots = 0;
+
+let playing = false;
+let soundEnabled = true;
+let suddenDeath = false;
+let matchFinished = false;
+
+let championshipRound = 1;
+let championshipOver = false;
+let playerTeam = "";
+let opponentTeam = "";
+
+/* =================================
+   SOM E NARRAÇÃO
+================================= */
+
+let audioContext = null;
+
+function sound(frequency = 440, duration = .15, type = "sine") {
+    if (!soundEnabled) return;
+
+    try {
+        const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+
+        if (!AudioContextClass) return;
+
+        audioContext ??= new AudioContextClass();
+
+        if (audioContext.state === "suspended") {
+            audioContext.resume();
+        }
+
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        oscillator.type = type;
+        oscillator.frequency.value = frequency;
+
+        gain.gain.setValueAtTime(.12, audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(
+            .001,
+            audioContext.currentTime + duration
+        );
+
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+
+        oscillator.start();
+        oscillator.stop(audioContext.currentTime + duration);
+
+    } catch (error) {
+        console.log("Áudio indisponível.");
+    }
+}
+
+function speak(text) {
+    if (!soundEnabled || !("speechSynthesis" in window)) return;
+
+    window.speechSynthesis.cancel();
+
+    const speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "pt-BR";
+    speech.rate = 1.08;
+    speech.pitch = 1.1;
+
+    window.speechSynthesis.speak(speech);
+}
+
+function goalSound() {
+    sound(660, .2);
+    setTimeout(() => sound(880, .3), 180);
+    setTimeout(() => sound(1100, .4), 360);
+}
+
+function saveSound() {
+    sound(180, .3, "triangle");
+    setTimeout(() => sound(130, .35, "triangle"), 180);
+}
+
+soundButton.addEventListener("click", () => {
+    soundEnabled = !soundEnabled;
+
+    soundButton.textContent = soundEnabled
+        ? "🔊 Som ligado"
+        : "🔇 Som desligado";
+
+    if (!soundEnabled && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+    } else {
+        sound(500, .15);
+    }
+});
+
+/* =================================
+   SELEÇÃO DE TIME
+================================= */
+
+function updateTeams() {
+    playerTeam = teamSelect.value;
+
+    const available = teams.filter(team =>
+        !team.includes(playerTeam)
+    );
+
+    opponentTeam =
+        available[Math.floor(Math.random() * available.length)];
+
+    $("myTeam").textContent = playerTeam;
+    $("enemyTeam").textContent = opponentTeam;
+}
+
+teamSelect.addEventListener("change", () => {
+    if (playing || (!matchFinished && shots > 0)) return;
+
+    if (matchFinished && modeSelect.value === "championship"
+        && !championshipOver && championshipRound > 1) {
+        return;
+    }
+
+    restartGame();
+});
+
+modeSelect.addEventListener("change", restartGame);
+
+/* =================================
+   INÍCIO DA PARTIDA
+================================= */
+
+function startMatch() {
+    updateTeams();
+
+    goals = 0;
+    enemyGoals = 0;
+    shots = 0;
+    extraShots = 0;
+
+    suddenDeath = false;
+    matchFinished = false;
+    playing = false;
+
+    $("myScore").textContent = "0";
+    $("enemyScore").textContent = "0";
+
+    $("ball").classList.remove("kicked");
+    $("ball").style.left = "50%";
+    $("keeper").style.left = "50%";
+
+    $("flash").classList.remove("show");
+
+    kickButton.disabled = false;
+    kickButton.textContent = "⚽ BATER PÊNALTI";
+
+    nextButton.disabled = true;
+    nextButton.classList.add("hidden");
+
+    selectedDirection = null;
+    clearDirectionSelection();
+
+    createProgress();
+
+    if (modeSelect.value === "championship") {
+        $("roundInfo").textContent =
+            "🏆 CAMPEONATO • FASE " + championshipRound + " DE 3";
+    } else {
+        $("roundInfo").textContent = "AMISTOSO • 5 COBRANÇAS";
+    }
+
+    $("message").textContent =
+        "A torcida está esperando! Escolha seu canto!";
+
+    // Resultado do adversário no tempo normal
+    // É definido no começo e permanece até o fim da partida.
+    enemyGoals = Math.floor(Math.random() * 6);
+    $("enemyScore").textContent = enemyGoals;
+
+    sound(500, .12);
+}
+
+/* =================================
+   SELEÇÃO DE DIREÇÃO
+================================= */
+
+function clearDirectionSelection() {
+    document.querySelectorAll(".direction").forEach(button => {
+        button.classList.remove("selected");
+    });
+}
+
+document.querySelectorAll(".direction").forEach(button => {
+
+    button.addEventListener("click", () => {
+
+        if (playing || matchFinished || championshipOver) return;
+
+        selectedDirection = button.dataset.direction;
+
+        clearDirectionSelection();
+        button.classList.add("selected");
+
+        $("message").textContent =
+            "🎯 Mira selecionada! Prepare o chute!";
+
+        sound(420, .08);
+    });
+
+});
+
+/* =================================
+   COBRANÇA DE PÊNALTI
+================================= */
+
+function shoot() {
+
+    if (playing || matchFinished || championshipOver) return;
+
+    if (!selectedDirection) {
+        $("message").textContent =
+            "⚠️ Escolha esquerda, meio ou direita!";
+        sound(160, .15);
+        return;
+    }
+
+    playing = true;
+    kickButton.disabled = true;
+    nextButton.disabled = true;
+
+    const positions = {
+        left: 27,
+        center: 50,
+        right: 73
+    };
+
+    const directions = ["left", "center", "right"];
+
+    // O goleiro escolhe uma direção aleatória.
+    const keeperDirection =
+        directions[Math.floor(Math.random() * directions.length)];
+
+    const keeperPosition = positions[keeperDirection];
+    const ballPosition = positions[selectedDirection];
+
+    const isGoal = selectedDirection !== keeperDirection;
+
+    $("keeper").style.left = keeperPosition + "%";
+    $("ball").style.left = ballPosition + "%";
+    $("ball").classList.add("kicked");
+
+    $("message").textContent = "⚽ A COBRANÇA VAI ACONTECER!";
+
+    sound(250, .1, "triangle");
+
+    setTimeout(() => {
+
+        if (isGoal) {
+            goals++;
+
+            $("myScore").textContent = goals;
+
+            $("message").textContent =
+                "⚽ GOOOOOOOOOL! QUE COBRANÇA!";
+            $("flash").textContent = "GOOOOL! ⚽";
+            goalSound();
+            speak("Gooooooooool! Que cobrança maravilhosa!");
+
+        } else {
+            $("message").textContent =
+                "🧤 DEFENDEU! O GOLEIRO FEZ UMA GRANDE DEFESA!";
+            $("flash").textContent = "DEFENDEU! 🧤";
+            saveSound();
+            speak("Defendeu! Que defesa espetacular!");
+        }
+
+        $("flash").classList.remove("show");
+        void $("flash").offsetWidth;
+        $("flash").classList.add("show");
+
+        if (!suddenDeath) {
+            shots++;
+            updateProgress();
+        } else {
+            extraShots++;
+            updateProgress(true);
+        }
+
+        setTimeout(() => {
+
+            $("ball").classList.remove("kicked");
+            $("ball").style.left = "50%";
+            $("keeper").style.left = "50%";
+            $("flash").classList.remove("show");
+
+            selectedDirection = null;
+            clearDirectionSelection();
+
+            if (suddenDeath) {
+                processSuddenDeath(isGoal);
+            } else if (shots >= 5) {
+                finishRegulation();
+            } else {
+                $("message").textContent += " Próxima cobrança!";
+                kickButton.disabled = false;
+                kickButton.textContent = "⚽ PRÓXIMO PÊNALTI";
+                playing = false;
+            }
+
+        }, 750);
+
+    }, 650);
+}
+
+/* =================================
+   PROGRESSO DAS COBRANÇAS
+================================= */
+
+function createProgress() {
+    $("progress").innerHTML = "";
+
+    for (let i = 0; i < 5; i++) {
+        const dot = document.createElement("span");
+        dot.className = "dot";
+        $("progress").appendChild(dot);
+    }
+}
+
+function updateProgress(extra = false) {
+    const dots = $("progress").querySelectorAll(".dot");
+
+    if (!extra) {
+        dots[shots - 1].classList.add(
+            goals > countPlayerGoalsBeforeLastShot()
+                ? "scored"
+                : "missed"
+        );
+    } else {
+        const dot = document.createElement("span");
+        dot.className = "dot extra";
+        $("progress").appendChild(dot);
+    }
+}
+
+// A cobrança anterior é identificada pelo resultado visual.
+let previousGoals = 0;
+
+function countPlayerGoalsBeforeLastShot() {
+    const current = previousGoals;
+    previousGoals = goals;
+    return current;
+}
+
+/* =================================
+   RESULTADO E PRORROGAÇÃO
+================================= */
+
+function finishRegulation() {
+
+    if (goals === enemyGoals) {
+        suddenDeath = true;
+        kickButton.disabled = false;
+        kickButton.textContent = "⚽ COBRANÇA DE DESEMPATE";
+        playing = false;
+
+        $("roundInfo").textContent += " • MORTE SÚBITA";
+
+        $("message").textContent =
+            "🔥 EMPATE! VAMOS PARA A MORTE SÚBITA!";
+
+        speak("Empate! Vamos para a morte súbita!");
+
+        return;
+    }
+
+    finishMatch(goals > enemyGoals);
+}
+
+function processSuddenDeath(playerScored) {
+
+    const enemyScored = Math.random() < 0.7;
+
+    if (enemyScored) {
+        enemyGoals++;
+        $("enemyScore").textContent = enemyGoals;
+    }
+
+    if (playerScored !== enemyScored) {
+        finishMatch(playerScored);
+        return;
+    }
+
+    $("message").textContent =
+        "⚔️ CONTINUA EMPATADO! MAIS UMA COBRANÇA!";
+
+    kickButton.disabled = false;
+    kickButton.textContent = "⚽ NOVO DESEMPATE";
+    playing = false;
+}
+
+function finishMatch(won) {
+
+    matchFinished = true;
+    playing = false;
+
+    kickButton.disabled = true;
+    nextButton.disabled = true;
+
+    if (won) {
+        $("message").textContent =
+            "🏆 VITÓRIA! VOCÊ GANHOU A PARTIDA!";
+
+        goalSound();
+        speak("Vitória! Parabéns, campeão!");
+
+        if (modeSelect.value === "championship") {
+
+            if (championshipRound >= 3) {
+                championshipOver = true;
+
+                $("roundInfo").textContent =
+                    "🏆 CAMPEÃO DO TORNEIO!";
+
+                $("message").textContent =
+                    "🏆 VOCÊ É O GRANDE CAMPEÃO!";
+
+                speak("Você é o grande campeão!");
+
+            } else {
+                $("message").textContent =
+                    "🔥 VITÓRIA! VOCÊ AVANÇOU DE FASE!";
+
+                nextButton.classList.remove("hidden");
+                nextButton.disabled = false;
+                nextButton.textContent = "🏆 PRÓXIMA FASE";
+            }
+
+        } else {
+            $("roundInfo").textContent = "AMISTOSO FINALIZADO";
+        }
+
+    } else {
+        $("message").textContent =
+            "😢 DERROTA! O ADVERSÁRIO VENCEU!";
+
+        saveSound();
+        speak("Fim de jogo! O adversário venceu.");
+
+        if (modeSelect.value === "championship") {
+            championshipOver = true;
+
+            $("roundInfo").textContent =
+                "CAMPEONATO ENCERRADO";
+        } else {
+            $("roundInfo").textContent = "AMISTOSO FINALIZADO";
+        }
+    }
+
+    kickButton.textContent = "PARTIDA FINALIZADA";
+}
+
+/* =================================
+   CAMPEONATO
+================================= */
+
+function nextRound() {
+
+    if (playing || !matchFinished || championshipOver) return;
+
+    championshipRound++;
+
+    startMatch();
+
+    $("message").textContent =
+        "🏆 NOVA FASE! NOVO ADVERSÁRIO!";
+
+    speak("Começou uma nova fase do campeonato!");
+}
+
+nextButton.addEventListener("click", nextRound);
+
+/* =================================
+   REINICIAR
+================================= */
+
+function restartGame() {
+
+    championshipRound = 1;
+    championshipOver = false;
+    previousGoals = 0;
+
+    startMatch();
+}
+
+restartButton.addEventListener("click", restartGame);
+kickButton.addEventListener("click", shoot);
+
+/* =================================
+   INICIAR JOGO
+================================= */
+
+startMatch();
+
+</script>
+
+</body>
+</html>          
